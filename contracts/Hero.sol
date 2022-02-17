@@ -33,17 +33,17 @@ contract Hero is ERC721Enumerable {
     }
 
     function _generateHero(uint256 _class, uint256 _newHeroId) internal {
-        require(_class >= 1 && _class <= 8, "Class doenst exist");
+        require(_class >= 1 && _class <= 8, "Class doesnt exist");
         HeroStruct memory newHero = HeroStruct(1, _class, 0);
         heroes[_newHeroId] = newHero;
     }
 
-    function getHero(uint256 heroId)
+    function getHero(uint256 _heroId)
         external
         view
         returns (HeroStruct memory _hero)
     {
-        return heroes[heroId];
+        return heroes[_heroId];
     }
 
     function classes(uint256 _class)
