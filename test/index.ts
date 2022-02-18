@@ -61,7 +61,7 @@ describe("Hero Contract", async () => {
   });
   it("Should failed when trying to level up", async () => {
     await expect(heroInstance.levelUp(heroId)).to.be.revertedWith(
-      "Insuficient experience"
+      "Insufficient experience"
     );
   });
   it("Should level up the hero", async () => {
