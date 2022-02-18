@@ -8,9 +8,18 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 import "hardhat/console.sol";
 
+interface StatsContract {
+    function initializeHeroStats(uint256 _heroId, uint256 _class) external;
+
+    function levelUp(uint256 _heroId) external;
+}
+
 contract Hero is ERC721Enumerable {
     using Counters for Counters.Counter;
     Counters.Counter private _heroCount;
+
+    address public statsAddr;
+    StatsContract private stats;
 
     constructor() ERC721("ETHORIA HERO", "ETRH") {}
 
@@ -29,6 +38,7 @@ contract Hero is ERC721Enumerable {
         uint256 _newHeroId = _heroCount.current();
         _generateHero(_class, _newHeroId);
         _safeMint(msg.sender, _newHeroId);
+        stats.initializeHeroStats(_newHeroId, _class);
         emit Summoned(msg.sender, _class, _newHeroId);
     }
 
@@ -77,16 +87,17 @@ contract Hero is ERC721Enumerable {
         }
     }
 
-    function levelUp(uint256 heroId) external {
-        require(_isApprovedOrOwner(msg.sender, heroId), "Not owner");
-        uint256 _level = heroes[heroId].level;
+    function levelUp(uint256 _heroId) external {
+        require(_isApprovedOrOwner(msg.sender, _heroId), "Not owner");
+        uint256 _level = heroes[_heroId].level;
         uint256 xpToNextLevel = xpRequired(_level);
         require(
-            xpToNextLevel <= heroes[heroId].experience,
-            "Insuficient experience"
+            xpToNextLevel <= heroes[_heroId].experience,
+            "Insufficient experience"
         );
-        heroes[heroId].experience -= xpToNextLevel;
-        heroes[heroId].level = _level + 1;
+        heroes[_heroId].experience -= xpToNextLevel;
+        heroes[_heroId].level = _level + 1;
+        stats.levelUp(_heroId);
     }
 
     function xpRequired(uint256 level)
@@ -95,6 +106,12 @@ contract Hero is ERC721Enumerable {
         returns (uint256 xpToNextLevel)
     {
         xpToNextLevel = (level * 1000) / 4;
+    }
+
+    function setStatsAddr(address _statsAddr) external {
+        require(statsAddr == address(0), "Stats addr already set!");
+        statsAddr = _statsAddr;
+        stats = StatsContract(statsAddr);
     }
 
     // Test purpose

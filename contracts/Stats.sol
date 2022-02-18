@@ -6,25 +6,27 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 
 import "hardhat/console.sol";
 
-interface Hero {
+interface HeroContract {
     struct HeroStruct {
         uint256 level;
         uint256 class;
         uint256 experience;
     }
 
-    function heroes(uint256) external view returns (HeroStruct memory);
+    // function heroes(uint256) external view returns (HeroStruct memory);
 
     function getApproved(uint256) external view returns (address);
 
     function ownerOf(uint256) external view returns (address);
+
+    function setStatsAddr(address _statsAddr) external;
 }
 
 contract Stats {
     using Math for uint256;
 
-    Hero private constant HERO =
-        Hero(0xce761D788DF608BD21bdd59d6f4B54b2e27F25Bb);
+    address public heroAddr;
+    HeroContract private hero;
 
     struct StatsStruct {
         uint256 strength;
@@ -69,17 +71,24 @@ contract Stats {
         uint256 hitRate
     );
 
-    function _isApprovedOrOwner(uint256 _hero) internal view returns (bool) {
-        return
-            HERO.getApproved(_hero) == msg.sender ||
-            HERO.ownerOf(_hero) == msg.sender;
+    modifier onlyHeroContract() {
+        require(msg.sender == heroAddr, "Not authorized");
+        _;
     }
 
-    function initializeHeroStats(uint256 _heroId) external {
-        require(_isApprovedOrOwner(_heroId), "Not owner");
-        require(!heroExist[_heroId], "Hero doesnt exist");
+    constructor(address _heroAddr) {
+        heroAddr = _heroAddr;
+        hero = HeroContract(heroAddr);
+        hero.setStatsAddr(address(this));
+    }
+
+    function initializeHeroStats(uint256 _heroId, uint256 _class)
+        external
+        onlyHeroContract
+    {
+        require(!heroExist[_heroId], "Hero already exist");
         heroExist[_heroId] = true;
-        stats[_heroId] = _getClassInitStats(HERO.heroes(_heroId).class);
+        stats[_heroId] = _getClassInitStats(_class);
         pointsToSpend[_heroId] = 0;
         emit Created(
             msg.sender,
@@ -96,17 +105,39 @@ contract Stats {
         );
     }
 
-    function _increaseBase(uint256 _heroId, uint32 _points) internal view {
+    function levelUp(uint256 _heroId) external onlyHeroContract {
+        require(heroExist[_heroId], "Hero doesnt exist");
+        pointsToSpend[_heroId] += 5;
+    }
+
+    function getHeroStats(uint256 _heroId)
+        external
+        view
+        returns (StatsStruct memory)
+    {
+        return stats[_heroId];
+    }
+
+    function getHeroPointsToSpend(uint256 _heroId)
+        external
+        view
+        returns (uint256)
+    {
+        return pointsToSpend[_heroId];
+    }
+
+    function _increaseBase(uint256 _heroId, uint32 _points) internal {
         require(_isApprovedOrOwner(_heroId), "Not owner");
         require(pointsToSpend[_heroId] >= _points, "Not enough points");
-        require(!heroExist[_heroId], "Hero doesnt exist");
+        require(heroExist[_heroId], "Hero doesnt exist");
+        pointsToSpend[_heroId] -= _points;
     }
 
     function increaseIntelligence(uint256 _heroId, uint32 _points) external {
         _increaseBase(_heroId, _points);
         StatsStruct storage _stats = stats[_heroId];
         _stats.intelligence += _points;
-        _stats.magicAttack = _calcMagicAttack(_stats.strength);
+        _stats.magicAttack = _calcMagicAttack(_stats.intelligence);
         emit Leveled(
             msg.sender,
             _heroId,
@@ -181,6 +212,12 @@ contract Stats {
             stats[_heroId].magicAttack,
             stats[_heroId].hitRate
         );
+    }
+
+    function _isApprovedOrOwner(uint256 _hero) internal view returns (bool) {
+        return
+            hero.getApproved(_hero) == msg.sender ||
+            hero.ownerOf(_hero) == msg.sender;
     }
 
     function _getClassInitStats(uint256 _class)
