@@ -3,16 +3,39 @@ import { BigNumber } from "ethers";
 import { Result } from "ethers/lib/utils";
 import { ethers } from "hardhat";
 import {
+  Equipment,
+  Equipment__factory,
   Craft,
   Craft__factory,
   AmorCodex,
   AmorCodex__factory,
+  WeaponCodex,
+  WeaponCodex__factory,
+  Hero,
+  Hero__factory,
+  HelmetCodex,
+  HelmetCodex__factory,
+  Stats,
+  Stats__factory,
 } from "../typechain";
+
+let HeroContract: Hero__factory;
+let heroInstance: Hero;
+let StatsContract: Stats__factory;
+let statsInstance: Stats;
 
 let CraftContract: Craft__factory;
 let craftInstance: Craft;
 let ArmorCodexContract: AmorCodex__factory;
 let aCodexInstance: AmorCodex;
+let EquipmentContract: Equipment__factory;
+let equipInstance: Equipment;
+let WeaponCodexContract: WeaponCodex__factory;
+let wCodexInstance: WeaponCodex;
+let hCodexInstance: HelmetCodex;
+let HelmetCodexContract: HelmetCodex__factory;
+
+let heroId = 1;
 
 type ArmorType = [
   BigNumber,
@@ -53,19 +76,62 @@ describe("Craft Contract", async () => {
     const result = await craftInstance.getItemById(1);
     const codexId = getFromArgs(result, "codexId");
     const item = await aCodexInstance.getArmorById(codexId);
-    console.log(formatArmor(item));
+    // console.log(formatArmor(item));
+  });
+});
+
+describe("Equipment Contract", async () => {
+  it("Shouldnt allow not a hero owner equip a item", async () => {});
+  it("Shouldnt allow not a item owner equip a item", async () => {});
+  it("Should revert if a invalid equipment type was passed", async () => {});
+  it("Should revert if tries to unequip a empty equipment", async () => {});
+  it("Shouldnt allow equip a two handed sword with another arm already equipped", async () => {});
+  it("Should correctly equip a armor", async () => {
+    await heroInstance.summon(7);
+    const tx = await equipInstance.equip(heroId, 1, 1);
+    await tx.wait();
+    const armor = await equipInstance.getHeroArmor(1);
+    const parsedArmor = formatArmor(armor);
+    expect(parsedArmor.name).to.be.eq("Dragon scale mail");
+    expect(parsedArmor.id).to.be.eq(1);
+    expect(parsedArmor.defense).to.be.eq(16);
   });
 });
 
 // HELPER FUNCTIONS
 
+const setupHeroStats = async () => {
+  HeroContract = await ethers.getContractFactory("Hero");
+  StatsContract = await ethers.getContractFactory("Stats");
+  heroInstance = await HeroContract.deploy();
+  statsInstance = await StatsContract.deploy(heroInstance.address);
+  await heroInstance.deployed();
+  await statsInstance.deployed();
+};
+
 const setup = async () => {
+  await setupHeroStats();
   CraftContract = await ethers.getContractFactory("Craft");
   ArmorCodexContract = await ethers.getContractFactory("AmorCodex");
+  EquipmentContract = await ethers.getContractFactory("Equipment");
+  WeaponCodexContract = await ethers.getContractFactory("WeaponCodex");
+  HelmetCodexContract = await ethers.getContractFactory("HelmetCodex");
   craftInstance = await CraftContract.deploy();
   aCodexInstance = await ArmorCodexContract.deploy();
+  wCodexInstance = await WeaponCodexContract.deploy();
+  hCodexInstance = await HelmetCodexContract.deploy();
+  equipInstance = await EquipmentContract.deploy(
+    craftInstance.address,
+    heroInstance.address,
+    wCodexInstance.address,
+    aCodexInstance.address,
+    hCodexInstance.address
+  );
+  await heroInstance.deployed();
+  await wCodexInstance.deployed();
   await craftInstance.deployed();
   await aCodexInstance.deployed();
+  await hCodexInstance.deployed();
 };
 
 const getFromArgs = (args: Result, argName: string) =>

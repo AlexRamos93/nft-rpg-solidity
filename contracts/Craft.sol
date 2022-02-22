@@ -18,7 +18,7 @@ contract Craft is ERC721Enumerable {
         uint256 codexId;
     }
 
-    mapping(uint256 => Item) private items;
+    mapping(uint256 => Item) public items;
 
     event Crafted(address owner, uint256 itemId, uint256 codexId);
 

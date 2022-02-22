@@ -18,6 +18,23 @@ contract WeaponCodex {
         uint256 atkModifier;
         uint256 mAtkModifier;
         uint256 hitModifier;
+        uint8 weaponType;
+    }
+
+    function getWeaponType(uint8 _type)
+        external
+        pure
+        returns (string memory weaponType)
+    {
+        if (_type == 1) {
+            return "Melee";
+        }
+        if (_type == 2) {
+            return "Ranged";
+        }
+        if (_type == 3) {
+            return "Magic";
+        }
     }
 
     function getWeaponById(uint256 _id)
@@ -49,6 +66,7 @@ contract WeaponCodex {
         _weapon.atkModifier = 0;
         _weapon.mAtkModifier = 0;
         _weapon.hitModifier = 0;
+        _weapon.weaponType = 1;
     }
 
     function fireSword() public pure returns (Weapon memory _weapon) {

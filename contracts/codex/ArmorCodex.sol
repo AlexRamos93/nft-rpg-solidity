@@ -19,7 +19,7 @@ contract AmorCodex {
     }
 
     function getArmorById(uint256 _id)
-        public
+        external
         pure
         returns (Armor memory _armor)
     {
