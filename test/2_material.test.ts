@@ -22,24 +22,24 @@ describe("Material Contract", async () => {
     const [addr1, addr2] = addresses;
     await materialInstance.mint(addr1.address, 1, 1);
     await materialInstance.mint(addr2.address, 2, 2);
-    const balanceOne = await materialInstance.getBalanceOf(1);
-    const balanceTwo = await materialInstance.connect(addr2).getBalanceOf(2);
+    const balanceOne = await materialInstance.getBalanceOf(addr1.address, 1);
+    const balanceTwo = await materialInstance.getBalanceOf(addr2.address, 2);
     expect(NormalNumber(balanceOne)).to.be.eq(1);
     expect(NormalNumber(balanceTwo)).to.be.eq(2);
   });
   it("Burn successfully 1 dragon claw", async () => {
     const [_, addr2] = addresses;
     await materialInstance.connect(addr2).spend(addr2.address, [2], [1]);
-    const balance = await materialInstance.connect(addr2).getBalanceOf(2);
+    const balance = await materialInstance.getBalanceOf(addr2.address, 2);
     expect(NormalNumber(balance)).to.be.eq(1);
   });
   it("Transfer successfully 1 dragon scale", async () => {
-    let balanceOne = await materialInstance.getBalanceOf(1);
+    const [addr1, addr2] = addresses;
+    let balanceOne = await materialInstance.getBalanceOf(addr1.address, 1);
     expect(NormalNumber(balanceOne)).to.be.eq(1);
-    const [_, addr2] = addresses;
     await materialInstance.transfer(addr2.address, [1], [1]);
-    balanceOne = await materialInstance.getBalanceOf(1);
-    const balanceTwo = await materialInstance.connect(addr2).getBalanceOf(1);
+    balanceOne = await materialInstance.getBalanceOf(addr1.address, 1);
+    const balanceTwo = await materialInstance.getBalanceOf(addr2.address, 1);
     expect(NormalNumber(balanceOne)).to.be.eq(0);
     expect(NormalNumber(balanceTwo)).to.be.eq(1);
   });

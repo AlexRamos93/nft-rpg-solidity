@@ -277,6 +277,12 @@ contract AmorCodex {
         if (_itemId == 1) {
             return dragonScaleMailRecipe();
         }
+        if (_itemId == 2) {
+            return fullPlateMailRecipe();
+        }
+        if (_itemId == 3) {
+            return royalGuardArmorRecipe();
+        }
     }
 
     function dragonScaleMailRecipe()

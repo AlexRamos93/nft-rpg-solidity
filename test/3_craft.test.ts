@@ -1,159 +1,167 @@
-// import { expect } from "chai";
-// import { BigNumber } from "ethers";
-// import { Result } from "ethers/lib/utils";
-// import { ethers } from "hardhat";
-// import {
-//   Equipment,
-//   Equipment__factory,
-//   Craft,
-//   Craft__factory,
-//   AmorCodex,
-//   AmorCodex__factory,
-//   WeaponCodex,
-//   WeaponCodex__factory,
-//   Hero,
-//   Hero__factory,
-//   HelmetCodex,
-//   HelmetCodex__factory,
-//   Stats,
-//   Stats__factory,
-// } from "../typechain";
+import { expect } from "chai";
+import { BigNumber, ContractTransaction } from "ethers";
+import { Result } from "ethers/lib/utils";
+import { ethers } from "hardhat";
+import {
+  Craft,
+  Craft__factory,
+  AmorCodex,
+  AmorCodex__factory,
+  Coin,
+  Coin__factory,
+  Material,
+  Material__factory,
+} from "../typechain";
 
-// let HeroContract: Hero__factory;
-// let heroInstance: Hero;
-// let StatsContract: Stats__factory;
-// let statsInstance: Stats;
+let CraftContract: Craft__factory;
+let craftInstance: Craft;
+let ArmorCodexContract: AmorCodex__factory;
+let aCodexInstance: AmorCodex;
+let CoinContract: Coin__factory;
+let coinInstance: Coin;
+let MaterialContract: Material__factory;
+let mInstance: Material;
 
-// let CraftContract: Craft__factory;
-// let craftInstance: Craft;
-// let ArmorCodexContract: AmorCodex__factory;
-// let aCodexInstance: AmorCodex;
-// let EquipmentContract: Equipment__factory;
-// let equipInstance: Equipment;
-// let WeaponCodexContract: WeaponCodex__factory;
-// let wCodexInstance: WeaponCodex;
-// let hCodexInstance: HelmetCodex;
-// let HelmetCodexContract: HelmetCodex__factory;
+type ArmorType = [
+  BigNumber,
+  string,
+  string,
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber
+] & {
+  id: BigNumber;
+  name: string;
+  description: string;
+  defense: BigNumber;
+  strModifier: BigNumber;
+  vitModifier: BigNumber;
+  dexModifier: BigNumber;
+  intModifier: BigNumber;
+  healthModifier: BigNumber;
+  defenseModifier: BigNumber;
+  atkModifier: BigNumber;
+  mAtkModifier: BigNumber;
+  hitModifier: BigNumber;
+};
 
-// let heroId = 1;
+type ItemType = [string, BigNumber] & {
+  owner: string;
+  codexId: BigNumber;
+};
 
-// type ArmorType = [
-//   BigNumber,
-//   string,
-//   string,
-//   BigNumber,
-//   BigNumber,
-//   BigNumber,
-//   BigNumber,
-//   BigNumber,
-//   BigNumber,
-//   BigNumber,
-//   BigNumber,
-//   BigNumber,
-//   BigNumber
-// ] & {
-//   id: BigNumber;
-//   name: string;
-//   description: string;
-//   defense: BigNumber;
-//   strModifier: BigNumber;
-//   vitModifier: BigNumber;
-//   dexModifier: BigNumber;
-//   intModifier: BigNumber;
-//   healthModifier: BigNumber;
-//   defenseModifier: BigNumber;
-//   atkModifier: BigNumber;
-//   mAtkModifier: BigNumber;
-//   hitModifier: BigNumber;
-// };
+describe("Craft Contract", async () => {
+  before(async () => setup());
+  it("Should craft DSM", async () => {
+    const [player] = await ethers.getSigners();
+    await mInstance.mint(player.address, 1, 500);
+    await mInstance.mint(player.address, 2, 50);
+    await mInstance.mint(player.address, 3, 500);
+    await coinInstance.approve(craftInstance.address, 15000);
+    await mInstance.setApprovalForAll(craftInstance.address, true);
+    const tx = await craftInstance.craft(player.address, 1, [1, 2, 3]);
+    const args = await getFromEvent(tx, "Crafted");
+    const itemId = getFromArgs(args ?? [], "itemId");
+    const item = formatItem(await craftInstance.getItemById(itemId));
+    const balanceDragonScale = NormalNumber(
+      await mInstance.balanceOf(player.address, 1)
+    );
+    const balanceDragonClaw = NormalNumber(
+      await mInstance.balanceOf(player.address, 2)
+    );
+    const balanceDragonLeather = NormalNumber(
+      await mInstance.balanceOf(player.address, 3)
+    );
+    expect(item.owner).to.be.eq(player.address);
+    expect(item.codexId).to.be.eq(1);
+    expect(balanceDragonScale).to.be.eq(0);
+    expect(balanceDragonClaw).to.be.eq(0);
+    expect(balanceDragonLeather).to.be.eq(0);
+  });
+  it("Shouldnt craft a item if at least one of the materials is not enough", async () => {
+    const [player] = await ethers.getSigners();
+    await mInstance.mint(player.address, 1, 500);
+    await mInstance.mint(player.address, 2, 10);
+    await mInstance.mint(player.address, 3, 500);
+    await coinInstance.approve(craftInstance.address, 15000);
+    await mInstance.setApprovalForAll(craftInstance.address, true);
+    await expect(
+      craftInstance.craft(player.address, 1, [1, 2, 3])
+    ).to.be.revertedWith("Not enough material");
+    const balanceDragonScale = NormalNumber(
+      await mInstance.balanceOf(player.address, 1)
+    );
+    const balanceDragonClaw = NormalNumber(
+      await mInstance.balanceOf(player.address, 2)
+    );
+    const balanceDragonLeather = NormalNumber(
+      await mInstance.balanceOf(player.address, 3)
+    );
+    expect(balanceDragonScale).to.be.eq(500);
+    expect(balanceDragonClaw).to.be.eq(10);
+    expect(balanceDragonLeather).to.be.eq(500);
+  });
+});
 
-// describe("Craft Contract", async () => {
-//   before(async () => setup());
-//   it("Should craft DSM", async () => {
-//     const [player] = await ethers.getSigners();
-//     const tx = await craftInstance.dungeonCraft(player.address, 1);
-//     await tx.wait();
-//     const result = await craftInstance.getItemById(1);
-//     const codexId = getFromArgs(result, "codexId");
-//     const item = await aCodexInstance.getArmorById(codexId);
-//     // console.log(formatArmor(item));
-//   });
-// });
+// HELPER FUNCTIONS
 
-// describe("Equipment Contract", async () => {
-//   it("Shouldnt allow not a hero owner equip a item", async () => {});
-//   it("Shouldnt allow not a item owner equip a item", async () => {});
-//   it("Should revert if a invalid equipment type was passed", async () => {});
-//   it("Should revert if tries to unequip a empty equipment", async () => {});
-//   it("Shouldnt allow equip a two handed sword with another arm already equipped", async () => {});
-//   it("Should correctly equip a armor", async () => {
-//     await heroInstance.summon(7);
-//     const tx = await equipInstance.equip(heroId, 1, 1);
-//     await tx.wait();
-//     const armor = await equipInstance.getHeroArmor(1);
-//     const parsedArmor = formatArmor(armor);
-//     expect(parsedArmor.name).to.be.eq("Dragon scale mail");
-//     expect(parsedArmor.id).to.be.eq(1);
-//     expect(parsedArmor.defense).to.be.eq(16);
-//   });
-// });
+const setup = async () => {
+  CraftContract = await ethers.getContractFactory("Craft");
+  ArmorCodexContract = await ethers.getContractFactory("AmorCodex");
+  CoinContract = await ethers.getContractFactory("Coin");
+  MaterialContract = await ethers.getContractFactory("Material");
+  aCodexInstance = await ArmorCodexContract.deploy();
+  coinInstance = await CoinContract.deploy();
+  mInstance = await MaterialContract.deploy();
+  craftInstance = await CraftContract.deploy(
+    aCodexInstance.address,
+    mInstance.address,
+    coinInstance.address
+  );
+  await craftInstance.deployed();
+  await aCodexInstance.deployed();
+  await coinInstance.deployed();
+  await mInstance.deployed();
+};
 
-// // HELPER FUNCTIONS
+const getFromEvent = async (tx: ContractTransaction, eventName: string) => {
+  const cr = await tx.wait();
+  const event = cr.events?.find((e) => e.event === eventName);
+  return event?.args;
+};
 
-// const setupHeroStats = async () => {
-//   HeroContract = await ethers.getContractFactory("Hero");
-//   StatsContract = await ethers.getContractFactory("Stats");
-//   heroInstance = await HeroContract.deploy();
-//   statsInstance = await StatsContract.deploy(heroInstance.address);
-//   await heroInstance.deployed();
-//   await statsInstance.deployed();
-// };
+const getFromArgs = (args: Result, argName: string) =>
+  NormalNumber(args[argName]);
 
-// const setup = async () => {
-//   await setupHeroStats();
-//   CraftContract = await ethers.getContractFactory("Craft");
-//   ArmorCodexContract = await ethers.getContractFactory("AmorCodex");
-//   EquipmentContract = await ethers.getContractFactory("Equipment");
-//   WeaponCodexContract = await ethers.getContractFactory("WeaponCodex");
-//   HelmetCodexContract = await ethers.getContractFactory("HelmetCodex");
-//   craftInstance = await CraftContract.deploy();
-//   aCodexInstance = await ArmorCodexContract.deploy();
-//   wCodexInstance = await WeaponCodexContract.deploy();
-//   hCodexInstance = await HelmetCodexContract.deploy();
-//   equipInstance = await EquipmentContract.deploy(
-//     craftInstance.address,
-//     heroInstance.address,
-//     wCodexInstance.address,
-//     aCodexInstance.address,
-//     hCodexInstance.address
-//   );
-//   await heroInstance.deployed();
-//   await wCodexInstance.deployed();
-//   await craftInstance.deployed();
-//   await aCodexInstance.deployed();
-//   await hCodexInstance.deployed();
-// };
+const NormalNumber = (bigNumber: BigNumber) => {
+  const etherNumber = ethers.utils.formatEther(bigNumber);
+  return Math.round(parseFloat(etherNumber) * 10 ** 18);
+};
 
-// const getFromArgs = (args: Result, argName: string) =>
-//   NormalNumber(args[argName]);
+const formatItem = (item: ItemType) => ({
+  owner: item["owner"],
+  codexId: item["codexId"],
+});
 
-// const NormalNumber = (bigNumber: BigNumber) => {
-//   const etherNumber = ethers.utils.formatEther(bigNumber);
-//   return Math.round(parseFloat(etherNumber) * 10 ** 18);
-// };
-
-// const formatArmor = (armor: ArmorType) => ({
-//   id: NormalNumber(armor["id"]),
-//   name: armor["name"],
-//   description: armor["description"],
-//   defense: NormalNumber(armor["defense"]),
-//   strModifier: NormalNumber(armor["strModifier"]),
-//   vitModifier: NormalNumber(armor["vitModifier"]),
-//   dexModifier: NormalNumber(armor["dexModifier"]),
-//   intModifier: NormalNumber(armor["intModifier"]),
-//   healthModifier: NormalNumber(armor["healthModifier"]),
-//   defenseModifier: NormalNumber(armor["defenseModifier"]),
-//   atkModifier: NormalNumber(armor["atkModifier"]),
-//   mAtkModifier: NormalNumber(armor["mAtkModifier"]),
-//   hitModifier: NormalNumber(armor["hitModifier"]),
-// });
+const formatArmor = (armor: ArmorType) => ({
+  id: NormalNumber(armor["id"]),
+  name: armor["name"],
+  description: armor["description"],
+  defense: NormalNumber(armor["defense"]),
+  strModifier: NormalNumber(armor["strModifier"]),
+  vitModifier: NormalNumber(armor["vitModifier"]),
+  dexModifier: NormalNumber(armor["dexModifier"]),
+  intModifier: NormalNumber(armor["intModifier"]),
+  healthModifier: NormalNumber(armor["healthModifier"]),
+  defenseModifier: NormalNumber(armor["defenseModifier"]),
+  atkModifier: NormalNumber(armor["atkModifier"]),
+  mAtkModifier: NormalNumber(armor["mAtkModifier"]),
+  hitModifier: NormalNumber(armor["hitModifier"]),
+});

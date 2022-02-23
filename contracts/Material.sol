@@ -32,8 +32,12 @@ contract Material is ERC1155Burnable, Ownable {
         emit Spended(_player, _ids, _amounts);
     }
 
-    function getBalanceOf(uint256 _id) external view returns (uint256) {
-        return balanceOf(msg.sender, _id);
+    function getBalanceOf(address _player, uint256 _id)
+        external
+        view
+        returns (uint256)
+    {
+        return balanceOf(_player, _id);
     }
 
     function transfer(
