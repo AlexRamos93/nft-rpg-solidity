@@ -18,7 +18,19 @@ contract AmorCodex {
         uint256 hitModifier;
     }
 
-    function getArmorById(uint256 _id)
+    struct Recipe {
+        uint256 itemId;
+        uint256 materialOneId;
+        uint256 materialOneQtd;
+        uint256 materialTwoId;
+        uint256 materialTwoQtd;
+        uint256 materialThreeId;
+        uint256 materialThreeQtd;
+        uint256 nonMaterialItemId;
+        uint256 fee;
+    }
+
+    function getItemById(uint256 _id)
         external
         pure
         returns (Armor memory _armor)
@@ -251,5 +263,61 @@ contract AmorCodex {
         _armor.atkModifier = 0;
         _armor.mAtkModifier = 0;
         _armor.hitModifier = 0;
+    }
+
+    //------------------------------------------------------------------------------
+    //----------------------------RECIPES-------------------------------------------
+    //------------------------------------------------------------------------------
+
+    function getItemRecipe(uint256 _itemId)
+        external
+        pure
+        returns (Recipe memory _recipe)
+    {
+        if (_itemId == 1) {
+            return dragonScaleMailRecipe();
+        }
+    }
+
+    function dragonScaleMailRecipe()
+        public
+        pure
+        returns (Recipe memory _recipe)
+    {
+        _recipe.itemId = 1;
+        _recipe.materialOneId = 1;
+        _recipe.materialOneQtd = 500;
+        _recipe.materialTwoId = 2;
+        _recipe.materialTwoQtd = 50;
+        _recipe.materialThreeId = 3;
+        _recipe.materialThreeQtd = 500;
+        _recipe.nonMaterialItemId = 2;
+        _recipe.fee = 15000;
+    }
+
+    function fullPlateMailRecipe() public pure returns (Recipe memory _recipe) {
+        _recipe.itemId = 2;
+        _recipe.materialOneId = 4;
+        _recipe.materialOneQtd = 500;
+        _recipe.materialTwoId = 5;
+        _recipe.materialTwoQtd = 500;
+        _recipe.materialThreeId = 6;
+        _recipe.materialThreeQtd = 100;
+        _recipe.nonMaterialItemId = 8;
+        _recipe.fee = 10000;
+    }
+
+    function royalGuardArmorRecipe()
+        public
+        pure
+        returns (Recipe memory _recipe)
+    {
+        _recipe.itemId = 3;
+        _recipe.materialOneId = 6;
+        _recipe.materialOneQtd = 100;
+        _recipe.materialTwoId = 5;
+        _recipe.materialTwoQtd = 100;
+        _recipe.nonMaterialItemId = 8;
+        _recipe.fee = 7000;
     }
 }
