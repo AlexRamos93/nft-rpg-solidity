@@ -1,39 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.12;
 
-contract AmorCodex {
-    struct Armor {
-        uint256 id;
-        string name;
-        string description;
-        uint256 defense;
-        uint256 strModifier;
-        uint256 vitModifier;
-        uint256 dexModifier;
-        uint256 intModifier;
-        uint256 healthModifier;
-        uint256 defenseModifier;
-        uint256 atkModifier;
-        uint256 mAtkModifier;
-        uint256 hitModifier;
-    }
+import "./IEquipCodex.sol";
 
-    struct Recipe {
-        uint256 itemId;
-        uint256 materialOneId;
-        uint256 materialOneQtd;
-        uint256 materialTwoId;
-        uint256 materialTwoQtd;
-        uint256 materialThreeId;
-        uint256 materialThreeQtd;
-        uint256 nonMaterialItemId;
-        uint256 fee;
-    }
-
+contract AmorCodex is IEquipCodex {
     function getItemById(uint256 _id)
         external
         pure
-        returns (Armor memory _armor)
+        override
+        returns (Equip memory _armor)
     {
         if (_id == 1) {
             return dragonScaleMail();
@@ -73,7 +48,7 @@ contract AmorCodex {
         }
     }
 
-    function dragonScaleMail() public pure returns (Armor memory _armor) {
+    function dragonScaleMail() public pure returns (Equip memory _armor) {
         _armor.id = 1;
         _armor.name = "Dragon scale mail";
         _armor.description = "";
@@ -89,7 +64,7 @@ contract AmorCodex {
         _armor.hitModifier = 0;
     }
 
-    function fullPlateMail() public pure returns (Armor memory _armor) {
+    function fullPlateMail() public pure returns (Equip memory _armor) {
         _armor.id = 2;
         _armor.name = "Full plate mail";
         _armor.description = "";
@@ -105,7 +80,7 @@ contract AmorCodex {
         _armor.hitModifier = 0;
     }
 
-    function royalGuardArmor() public pure returns (Armor memory _armor) {
+    function royalGuardArmor() public pure returns (Equip memory _armor) {
         _armor.id = 3;
         _armor.name = "Royal guard armor";
         _armor.description = "";
@@ -121,7 +96,7 @@ contract AmorCodex {
         _armor.hitModifier = 1;
     }
 
-    function crusaderArmor() public pure returns (Armor memory _armor) {
+    function crusaderArmor() public pure returns (Equip memory _armor) {
         _armor.id = 4;
         _armor.name = "Crusader armor";
         _armor.description = "";
@@ -137,7 +112,7 @@ contract AmorCodex {
         _armor.hitModifier = 0;
     }
 
-    function elvenArmor() public pure returns (Armor memory _armor) {
+    function elvenArmor() public pure returns (Equip memory _armor) {
         _armor.id = 5;
         _armor.name = "Elven armor";
         _armor.description = "";
@@ -153,7 +128,7 @@ contract AmorCodex {
         _armor.hitModifier = 5;
     }
 
-    function skullAmor() public pure returns (Armor memory _armor) {
+    function skullAmor() public pure returns (Equip memory _armor) {
         _armor.id = 6;
         _armor.name = "Skull armor";
         _armor.description = "";
@@ -169,7 +144,7 @@ contract AmorCodex {
         _armor.hitModifier = 0;
     }
 
-    function warriorAmor() public pure returns (Armor memory _armor) {
+    function warriorAmor() public pure returns (Equip memory _armor) {
         _armor.id = 7;
         _armor.name = "Warrior amor";
         _armor.description = "";
@@ -185,7 +160,7 @@ contract AmorCodex {
         _armor.hitModifier = 0;
     }
 
-    function steelArmor() public pure returns (Armor memory _armor) {
+    function steelArmor() public pure returns (Equip memory _armor) {
         _armor.id = 8;
         _armor.name = "Steel amor";
         _armor.description = "";
@@ -201,7 +176,7 @@ contract AmorCodex {
         _armor.hitModifier = 0;
     }
 
-    function mageCape() public pure returns (Armor memory _armor) {
+    function mageCape() public pure returns (Equip memory _armor) {
         _armor.id = 9;
         _armor.name = "Mage cape";
         _armor.description = "";
@@ -217,7 +192,7 @@ contract AmorCodex {
         _armor.hitModifier = 0;
     }
 
-    function rangersCloak() public pure returns (Armor memory _armor) {
+    function rangersCloak() public pure returns (Equip memory _armor) {
         _armor.id = 10;
         _armor.name = "Ranger's cloak";
         _armor.description = "";
@@ -233,7 +208,7 @@ contract AmorCodex {
         _armor.hitModifier = 2;
     }
 
-    function chainAmor() public pure returns (Armor memory _armor) {
+    function chainAmor() public pure returns (Equip memory _armor) {
         _armor.id = 11;
         _armor.name = "Chain amor";
         _armor.description = "";
@@ -249,7 +224,7 @@ contract AmorCodex {
         _armor.hitModifier = 0;
     }
 
-    function leatherAmor() public pure returns (Armor memory _armor) {
+    function leatherAmor() public pure returns (Equip memory _armor) {
         _armor.id = 12;
         _armor.name = "Leather amor";
         _armor.description = "";

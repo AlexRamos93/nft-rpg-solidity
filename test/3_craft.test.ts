@@ -108,6 +108,10 @@ describe("Craft Contract", async () => {
     expect(balanceDragonClaw).to.be.eq(10);
     expect(balanceDragonLeather).to.be.eq(500);
   });
+  it("Shouldnt craft if the fee is not enough", async () => {});
+  it("Shouldnt craft if the itemId not exist", async () => {});
+  it("Shouldnt craft if the materials wasnt approved", async () => {});
+  it("Shouldnt craft if the fee wasnt approved", async () => {});
 });
 
 // HELPER FUNCTIONS

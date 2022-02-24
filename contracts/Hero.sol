@@ -1,12 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
-
 pragma solidity 0.8.12;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-
-import "hardhat/console.sol";
+import "./shared/ERC721.sol";
 
 interface StatsContract {
     function initializeHeroStats(uint256 _heroId, uint256 _class) external;
@@ -21,7 +17,8 @@ contract Hero is ERC721Enumerable {
     address public statsAddr;
     StatsContract private stats;
 
-    constructor() ERC721("ETHORIA HERO", "ETRH") {}
+    string public constant NAME = "Ethoria Heroes";
+    string public constant SYMBOL = "EHE";
 
     struct HeroStruct {
         uint256 level;

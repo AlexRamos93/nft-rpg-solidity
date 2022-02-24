@@ -2,11 +2,7 @@
 pragma solidity 0.8.12;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-import "hardhat/console.sol";
+import "./shared/ERC721.sol";
 
 interface ICOIN {
     function transferFrom(
@@ -53,6 +49,25 @@ interface IArmorCodex {
         returns (Recipe memory _recipe);
 }
 
+interface IEquipCodexContract {
+    struct Recipe {
+        uint256 itemId;
+        uint256 materialOneId;
+        uint256 materialOneQtd;
+        uint256 materialTwoId;
+        uint256 materialTwoQtd;
+        uint256 materialThreeId;
+        uint256 materialThreeQtd;
+        uint256 nonMaterialItemId;
+        uint256 fee;
+    }
+
+    function getItemRecipe(uint256 _itemId)
+        external
+        pure
+        returns (Recipe memory _recipe);
+}
+
 contract Craft is ERC721Enumerable {
     using Counters for Counters.Counter;
     Counters.Counter private _itemsCount;
@@ -65,7 +80,7 @@ contract Craft is ERC721Enumerable {
         address _armorCodexAddr,
         address _materialAddr,
         address _coinAddr
-    ) ERC721("ETHORIA Items", "ETRI") {
+    ) {
         armorCodex = IArmorCodex(_armorCodexAddr);
         material = IMaterial(_materialAddr);
         coin = ICOIN(_coinAddr);

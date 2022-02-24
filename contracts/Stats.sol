@@ -4,16 +4,12 @@ pragma solidity 0.8.12;
 
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
-import "hardhat/console.sol";
-
 interface HeroContract {
     struct HeroStruct {
         uint256 level;
         uint256 class;
         uint256 experience;
     }
-
-    // function heroes(uint256) external view returns (HeroStruct memory);
 
     function getApproved(uint256) external view returns (address);
 
